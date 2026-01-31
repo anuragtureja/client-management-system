@@ -1,38 +1,46 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+import { db } from "./db";
+import {
+  clients,
+  type CreateClientRequest,
+  type UpdateClientRequest,
+  type ClientResponse
+} from "@shared/schema";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  getClients(): Promise<ClientResponse[]>;
+  getClient(id: number): Promise<ClientResponse | undefined>;
+  createClient(client: CreateClientRequest): Promise<ClientResponse>;
+  updateClient(id: number, updates: UpdateClientRequest): Promise<ClientResponse>;
+  deleteClient(id: number): Promise<void>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-
-  constructor() {
-    this.users = new Map();
+export class DatabaseStorage implements IStorage {
+  async getClients(): Promise<ClientResponse[]> {
+    return await db.select().from(clients).orderBy(clients.id);
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  async getClient(id: number): Promise<ClientResponse | undefined> {
+    const [client] = await db.select().from(clients).where(eq(clients.id, id));
+    return client;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+  async createClient(client: CreateClientRequest): Promise<ClientResponse> {
+    const [newClient] = await db.insert(clients).values(client).returning();
+    return newClient;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async updateClient(id: number, updates: UpdateClientRequest): Promise<ClientResponse> {
+    const [updated] = await db.update(clients)
+      .set(updates)
+      .where(eq(clients.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteClient(id: number): Promise<void> {
+    await db.delete(clients).where(eq(clients.id, id));
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
