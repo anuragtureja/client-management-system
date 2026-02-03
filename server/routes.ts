@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
+import { createAuthRouter, requireAuth } from "./auth";
 import { api } from "@shared/routes";
 import { z } from "zod";
 
@@ -9,12 +10,16 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
 
-  app.get(api.clients.list.path, async (req, res) => {
+  // Register auth routes (no auth required)
+  app.use("/api/auth", createAuthRouter());
+
+  // All client routes require authentication
+  app.get(api.clients.list.path, requireAuth, async (req, res) => {
     const clients = await storage.getClients();
     res.json(clients);
   });
 
-  app.get(api.clients.get.path, async (req, res) => {
+  app.get(api.clients.get.path, requireAuth, async (req, res) => {
     const client = await storage.getClient(Number(req.params.id));
     if (!client) {
       return res.status(404).json({ message: 'Client not found' });
@@ -22,7 +27,7 @@ export async function registerRoutes(
     res.json(client);
   });
 
-  app.post(api.clients.create.path, async (req, res) => {
+  app.post(api.clients.create.path, requireAuth, async (req, res) => {
     try {
       const input = api.clients.create.input.parse(req.body);
       const client = await storage.createClient(input);
@@ -38,7 +43,7 @@ export async function registerRoutes(
     }
   });
 
-  app.put(api.clients.update.path, async (req, res) => {
+  app.put(api.clients.update.path, requireAuth, async (req, res) => {
     try {
       const input = api.clients.update.input.parse(req.body);
       const updatedClient = await storage.updateClient(Number(req.params.id), input);
@@ -57,7 +62,7 @@ export async function registerRoutes(
     }
   });
 
-  app.delete(api.clients.delete.path, async (req, res) => {
+  app.delete(api.clients.delete.path, requireAuth, async (req, res) => {
     await storage.deleteClient(Number(req.params.id));
     res.status(204).send();
   });

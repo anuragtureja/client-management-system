@@ -12,9 +12,41 @@ export const errorSchemas = {
   internal: z.object({
     message: z.string(),
   }),
+  unauthorized: z.object({
+    message: z.string(),
+  }),
+};
+
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
+
+export type LoginRequest = z.infer<typeof loginSchema>;
+export type AuthResponse = {
+  token: string;
+  message: string;
 };
 
 export const api = {
+  auth: {
+    login: {
+      method: 'POST' as const,
+      path: '/api/auth/login',
+      input: loginSchema,
+      responses: {
+        200: z.object({ token: z.string() }),
+        401: errorSchemas.unauthorized,
+      },
+    },
+    logout: {
+      method: 'POST' as const,
+      path: '/api/auth/logout',
+      responses: {
+        200: z.object({ message: z.string() }),
+      },
+    },
+  },
   clients: {
     list: {
       method: 'GET' as const,

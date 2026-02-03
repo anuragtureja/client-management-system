@@ -1,11 +1,23 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl, type CreateClientRequest, type UpdateClientRequest } from "@shared/routes";
 
+function getAuthHeaders() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return {};
+  }
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+}
+
 export function useClients() {
   return useQuery({
     queryKey: [api.clients.list.path],
     queryFn: async () => {
-      const res = await fetch(api.clients.list.path);
+      const res = await fetch(api.clients.list.path, {
+        headers: getAuthHeaders(),
+      });
       if (!res.ok) throw new Error("Failed to fetch clients");
       return api.clients.list.responses[200].parse(await res.json());
     },
@@ -17,7 +29,9 @@ export function useClient(id: number) {
     queryKey: [api.clients.get.path, id],
     queryFn: async () => {
       const url = buildUrl(api.clients.get.path, { id });
-      const res = await fetch(url);
+      const res = await fetch(url, {
+        headers: getAuthHeaders(),
+      });
       if (res.status === 404) return null;
       if (!res.ok) throw new Error("Failed to fetch client");
       return api.clients.get.responses[200].parse(await res.json());
@@ -34,7 +48,10 @@ export function useCreateClient() {
       const validated = api.clients.create.input.parse(data);
       const res = await fetch(api.clients.create.path, {
         method: api.clients.create.method,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
         body: JSON.stringify(validated),
       });
       if (!res.ok) {
@@ -60,7 +77,10 @@ export function useUpdateClient() {
       const url = buildUrl(api.clients.update.path, { id });
       const res = await fetch(url, {
         method: api.clients.update.method,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
         body: JSON.stringify(validated),
       });
       if (!res.ok) {
@@ -84,7 +104,10 @@ export function useDeleteClient() {
   return useMutation({
     mutationFn: async (id: number) => {
       const url = buildUrl(api.clients.delete.path, { id });
-      const res = await fetch(url, { method: api.clients.delete.method });
+      const res = await fetch(url, {
+        method: api.clients.delete.method,
+        headers: getAuthHeaders(),
+      });
       if (res.status === 404) throw new Error("Client not found");
       if (!res.ok) throw new Error("Failed to delete client");
     },

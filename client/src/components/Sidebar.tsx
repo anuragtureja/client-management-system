@@ -10,7 +10,12 @@ const items = [
 ];
 
 export function Sidebar() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setLocation("/login");
+  };
 
   return (
     <div className="w-64 bg-white border-r border-border min-h-screen flex flex-col fixed left-0 top-0 bottom-0 shadow-sm z-10">
@@ -49,7 +54,10 @@ export function Sidebar() {
       </nav>
 
       <div className="p-4 border-t border-border">
-        <button className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors duration-200">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors duration-200"
+        >
           <LogOut className="w-5 h-5" />
           <span className="font-medium">Logout</span>
         </button>
