@@ -62,8 +62,13 @@ export async function registerRoutes(
     res.status(204).send();
   });
 
-  // Seed data
-  await seedDatabase();
+  // Seed data — if the database isn't initialized yet this may fail.
+  // Catch and log errors so the server can still start in dev.
+  try {
+    await seedDatabase();
+  } catch (err: any) {
+    console.warn("Database seed skipped:", err?.message ?? err);
+  }
 
   return httpServer;
 }
