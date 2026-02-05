@@ -31,13 +31,14 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
     return res.status(401).json({ message: "Missing or invalid authorization header" });
   }
 
-  const token = authHeader.substring(7); // Remove "Bearer " prefix
+  const token = authHeader.substring(7).trim(); // Remove "Bearer " prefix and trim
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { email: string };
     req.user = decoded;
     next();
-  } catch (err) {
+  } catch (err: any) {
+    console.error('JWT Verification Error:', err.message);
     return res.status(401).json({ message: "Invalid or expired token" });
   }
 }
@@ -56,7 +57,9 @@ export function createAuthRouter() {
       }
 
       // Generate JWT token
-      const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "24h" });
+      // Use a longer expiry in development to avoid immediate expirations during local testing
+      const expiry = process.env.NODE_ENV === "production" ? "24h" : "7d";
+      const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: expiry });
 
       return res.status(200).json({ token });
     } catch (err) {

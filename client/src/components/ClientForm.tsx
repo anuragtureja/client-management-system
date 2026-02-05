@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertClientSchema, type InsertClient } from "@shared/schema";
+import { useDevelopers } from "@/hooks/use-developers";
 import {
   Form,
   FormControl,
@@ -36,6 +37,8 @@ interface ClientFormProps {
 }
 
 export function ClientForm({ defaultValues, onSubmit, isSubmitting, onCancel }: ClientFormProps) {
+  const { data: developers, isLoading: loadingDevelopers } = useDevelopers();
+  
   const form = useForm<InsertClient>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -146,15 +149,22 @@ export function ClientForm({ defaultValues, onSubmit, isSubmitting, onCancel }: 
                 <FormLabel>Assigned Developer</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                   <FormControl>
-                    <SelectTrigger className="rounded-xl">
-                      <SelectValue placeholder="Select developer" />
+                    <SelectTrigger className="rounded-xl" disabled={loadingDevelopers}>
+                      <SelectValue placeholder={loadingDevelopers ? "Loading developers..." : "Select developer"} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="Sarah Jenkins">Sarah Jenkins</SelectItem>
-                    <SelectItem value="Mike Chen">Mike Chen</SelectItem>
-                    <SelectItem value="Alex Rivera">Alex Rivera</SelectItem>
-                    <SelectItem value="Jessica Wong">Jessica Wong</SelectItem>
+                    {developers && developers.length > 0 ? (
+                      developers.map((dev) => (
+                        <SelectItem key={dev.id} value={dev.name}>
+                          {dev.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <div className="p-2 text-sm text-muted-foreground">
+                        No developers available
+                      </div>
+                    )}
                   </SelectContent>
                 </Select>
                 <FormMessage />

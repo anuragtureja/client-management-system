@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Dashboard from "@/pages/Dashboard";
+import Developers from "@/pages/Developers";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/not-found";
 
@@ -20,6 +21,11 @@ function Router() {
       <Route path="/clients">
         <ProtectedRoute>
           <Dashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/developers">
+        <ProtectedRoute>
+          <Developers />
         </ProtectedRoute>
       </Route>
       <Route component={NotFound} />

@@ -1,10 +1,11 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Users, PieChart, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, Code2, PieChart, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/" },
   { icon: Users, label: "Clients", href: "/clients" },
+  { icon: Code2, label: "Developers", href: "/developers" },
   { icon: PieChart, label: "Reports", href: "/reports" },
   { icon: Settings, label: "Settings", href: "/settings" },
 ];

@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { insertClientSchema, clients } from './schema';
+import { insertClientSchema, clients, insertDeveloperSchema, developers } from './schema';
+import type { CreateClientRequest, UpdateClientRequest, CreateDeveloperRequest } from './schema';
 
 export const errorSchemas = {
   validation: z.object({
@@ -44,6 +45,40 @@ export const api = {
       path: '/api/auth/logout',
       responses: {
         200: z.object({ message: z.string() }),
+      },
+    },
+  },
+  developers: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/developers',
+      responses: {
+        200: z.array(z.custom<typeof developers.$inferSelect>()),
+      },
+    },
+    get: {
+      method: 'GET' as const,
+      path: '/api/developers/:id',
+      responses: {
+        200: z.custom<typeof developers.$inferSelect>(),
+        404: errorSchemas.notFound,
+      },
+    },
+    create: {
+      method: 'POST' as const,
+      path: '/api/developers',
+      input: insertDeveloperSchema,
+      responses: {
+        201: z.custom<typeof developers.$inferSelect>(),
+        400: errorSchemas.validation,
+      },
+    },
+    delete: {
+      method: 'DELETE' as const,
+      path: '/api/developers/:id',
+      responses: {
+        204: z.void(),
+        404: errorSchemas.notFound,
       },
     },
   },
@@ -104,3 +139,7 @@ export function buildUrl(path: string, params?: Record<string, string | number>)
   }
   return url;
 }
+
+// Re-export types for convenience
+export type { CreateClientRequest, UpdateClientRequest, CreateDeveloperRequest };
+

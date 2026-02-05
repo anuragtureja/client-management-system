@@ -1,14 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, buildUrl, type CreateClientRequest, type UpdateClientRequest } from "@shared/routes";
 
-function getAuthHeaders() {
+function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem("token");
-  if (!token) {
-    return {};
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
   }
-  return {
-    Authorization: `Bearer ${token}`,
-  };
+  return headers;
 }
 
 export function useClients() {
